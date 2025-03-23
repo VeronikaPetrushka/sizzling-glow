@@ -61,7 +61,7 @@ const Menu = () => {
                     <Text style={styles.btnText}>Bonus</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.btn}>
+                <TouchableOpacity style={styles.btn} onPress={() => navigation.navigate('ShopScreen')}>
                     <Image source={require('../assets/decor/button.png')} style={styles.btnImg} />
                     <Text style={styles.btnText}>Shop</Text>
                 </TouchableOpacity>
