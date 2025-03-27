@@ -20,6 +20,7 @@
     "react-native-safe-area-context": "^5.3.0",
     "react-native-screens": "^4.9.2",
     "react-native-slot-machine": "^0.4.0",
+    "react-native-svg": "^15.11.2",
     "react-native-track-player": "^4.1.1"
   },
   "devDependencies": {

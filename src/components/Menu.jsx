@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions, ImageBackground } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import SettingsModal from "./SettingsModal";
 import Icons from "./Icons";
 
@@ -11,21 +11,73 @@ const Menu = () => {
     const navigation = useNavigation();
     const [settingsVisible, setSettingsVisible] = useState(false);
     const [balance, setBalance] = useState(0);
-    
-    useEffect(() => {
-        const getBalance = async () => {
-            try {
-                const storedBalance = await AsyncStorage.getItem("balance");
-                if (storedBalance !== null) {
-                    setBalance(parseInt(storedBalance));
-                }
-            } catch (error) {
-                console.error("Error retrieving balance", error);
+    const [countdown, setCountdown] = useState(0);
+    const [isBonusAvailable, setIsBonusAvailable] = useState(true);
+
+    useFocusEffect(
+        useCallback(() => {
+            getBalance();
+            checkBonusTimer();
+        }, [getBalance, checkBonusTimer])
+    );
+
+    const getBalance = async () => {
+        try {
+            const storedBalance = await AsyncStorage.getItem("balance");
+            if (storedBalance !== null) {
+                setBalance(parseInt(storedBalance));
             }
-        };
-        
-        getBalance();
-    }, []);
+        } catch (error) {
+            console.error("Error retrieving balance", error);
+        }
+    };
+
+    const checkBonusTimer = async () => {
+        try {
+            const storedTimestamp = await AsyncStorage.getItem("bonusTimestamp");
+            if (storedTimestamp) {
+                const elapsedTime = Date.now() - parseInt(storedTimestamp);
+                const remainingTime = 24 * 60 * 60 * 1000 - elapsedTime;
+
+                if (remainingTime > 0) {
+                    setCountdown(remainingTime);
+                    setIsBonusAvailable(false);
+                } else {
+                    await AsyncStorage.removeItem("bonusTimestamp");
+                    setIsBonusAvailable(true);
+                }
+            } else {
+                setIsBonusAvailable(true);
+            }
+        } catch (error) {
+            console.error("Error checking timer", error);
+        }
+    };
+
+    useEffect(() => {
+        if (countdown > 0) {
+            const interval = setInterval(() => {
+                setCountdown(prevTime => {
+                    if (prevTime <= 1000) {
+                        setIsBonusAvailable(true);
+                        AsyncStorage.removeItem("bonusTimestamp");
+                        clearInterval(interval);
+                        return 0;
+                    }
+                    return prevTime - 1000;
+                });
+            }, 1000);
+
+            return () => clearInterval(interval);
+        }
+    }, [countdown]);
+
+    const formatTime = (time) => {
+        const hours = Math.floor(time / (1000 * 60 * 60)).toString().padStart(2, '0');
+        const minutes = Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+        const seconds = Math.floor((time % (1000 * 60)) / 1000).toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    };
 
     return (
         <ImageBackground source={require('../assets/back/back.png')} style={{flex: 1}}>
@@ -56,10 +108,16 @@ const Menu = () => {
                     <Text style={styles.btnText}>About</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.btn}>
+                <TouchableOpacity 
+                    style={[styles.btn, !isBonusAvailable && {opacity: 0.5}]} 
+                    onPress={() => navigation.navigate('BonusScreen')} 
+                    disabled={!isBonusAvailable}
+                >
                     <Image source={require('../assets/decor/button.png')} style={styles.btnImg} />
                     <Text style={styles.btnText}>Bonus</Text>
                 </TouchableOpacity>
+
+                <Text style={styles.timer}>{isBonusAvailable ? 'Bonus is active' : `${formatTime(countdown)}`}</Text>
 
                 <TouchableOpacity style={styles.btn} onPress={() => navigation.navigate('ShopScreen')}>
                     <Image source={require('../assets/decor/button.png')} style={styles.btnImg} />
@@ -129,6 +187,17 @@ const styles = StyleSheet.create({
         position: 'absolute',
         alignSelf: 'center',
         top: 24
+    },
+
+    timer: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: '#fff',
+        marginBottom: 20,
+        paddingVertical: 5,
+        paddingHorizontal: 20,
+        borderRadius: 16,
+        backgroundColor: '#8b0b00'
     }
     
 });

@@ -15,6 +15,7 @@ const Slots = () => {
     const [balance, setBalance] = useState(0);
     const [spinning, setSpinning] = useState(false);
     const [currentBack, setCurrentBack] = useState(backgrounds[0]);
+    const [winAmount, setWinAmount] = useState(0);
 
     useEffect(() => {
         loadCurrentBack();
@@ -63,8 +64,15 @@ const Slots = () => {
     }
 
     const spinSlots = async () => {
+        if (balance < 10) return;
+    
         setSpinning(true);
-
+        setWinAmount(0);
+    
+        let newBalance = balance - 10;
+        setBalance(newBalance);
+        await AsyncStorage.setItem("balance", newBalance.toString());
+    
         setTimeout(async () => {
             const newColumns = generateColumns();
             setColumns(newColumns);
@@ -78,7 +86,7 @@ const Slots = () => {
         console.log('Third Row:', thirdRow);
     
         let counts = {};
-        let winAmount = 0;
+        let win = 0;
     
         thirdRow.forEach(symbol => {
             counts[symbol.price] = (counts[symbol.price] || 0) + 1;
@@ -91,25 +99,27 @@ const Slots = () => {
             console.log('Matching Symbol:', matchingSymbol);
     
             if (counts[price] >= 3) {
-                winAmount += matchingSymbol.price * counts[price];
+                win += matchingSymbol.price * counts[price];
             }
         });
     
-        console.log('Win Amount:', winAmount);
+        console.log('Win Amount:', win);
     
-        if (winAmount > 0) {
-            let newBalance = balance + winAmount;
+        if (win > 0) {
+            let newBalance = balance + win;
             setBalance(newBalance);
+            setWinAmount(win);
             await AsyncStorage.setItem("balance", newBalance.toString());
-            Alert.alert("You Won!", `You won ${winAmount} star coins!`);
+        } else {
+            setWinAmount(0);
         }
-    };    
+    }; 
 
     const slotsColor = () => {
         if(currentBack.name === 'Main Background') {
             return {backgroundColor: '#f5d900'};
         } else if (currentBack.name === 'Green Background') {
-            return{ backgroundColor: '#4f817'};
+            return{ backgroundColor: '#4f8c17'};
         } else if (currentBack.name === 'Blue Background') {
             return {backgroundColor: '#2e49a7'};
         } else if (currentBack.name === 'Red Background') {
@@ -137,18 +147,35 @@ const Slots = () => {
                     <Icons type={'back'} />
                 </TouchableOpacity>
 
+                <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: height * 0.08}}>
+                    {
+                        winAmount && (
+                            <>
+                                <Text style={[styles.balanceBtnText, {fontSize: 36, lineHeight: 40}]}>+ {winAmount}</Text>
+                                <View style={{width: 32, height: 32, marginLeft: 2}}>
+                                    <Icons type={'coin'} />
+                                </View>
+                            </>
+                        )
+                    }
+                </View>
+
                 <View style={styles.slotContainer}>
-                    {columns.length > 0 && columns.map((col, colIndex) => (
-                        <View key={colIndex} style={[styles.column, slotsColor()]}>
-                            {col.slice(0, 4).map((symbol, rowIndex) => (
-                                <Image 
-                                    key={rowIndex} 
-                                    source={symbol.image} 
-                                    style={[styles.symbol, rowIndex === 2 && styles.highlightedSymbol]}
-                                />
-                            ))}
-                        </View>
-                    ))}
+                    {columns.length > 0 && (
+                        <>
+                            {columns.map((col, colIndex) => (
+                                    <View key={colIndex} style={[styles.column, slotsColor()]}>
+                                        {col.slice(0, 4).map((symbol, rowIndex) => (
+                                            <Image 
+                                                key={rowIndex} 
+                                                source={symbol.image} 
+                                                style={[styles.symbol, rowIndex === 2 && styles.highlightedSymbol]}
+                                            />
+                                        ))}
+                                    </View>
+                                ))}    
+                        </>
+                    )}
                 </View>
 
                 <View style={styles.buttonsContainer}>
@@ -163,7 +190,16 @@ const Slots = () => {
                                     </View>
                                 </View>
                             </View>
-                            <TouchableOpacity style={[styles.btn, spinning && {opacity: 0.5}]} onPress={spinSlots} disabled={spinning}>
+                            <View style={[styles.balanceBtn, {width: 217, height: 60}]}>
+                                <Image source={require('../assets/decor/settings-btn.png')} style={styles.btnImg} />
+                                <View style={[styles.balanceContainer, {top: 18}]}>
+                                    <Text style={styles.balanceBtnText}>Bet: 10</Text>
+                                    <View style={{width: 24, height: 24, marginLeft: 2}}>
+                                        <Icons type={'coin'} />
+                                    </View>
+                                </View>
+                            </View>
+                            <TouchableOpacity style={[styles.btn, (spinning || balance < 10) && {opacity: 0.5}]} onPress={spinSlots} disabled={spinning || balance < 10}>
                                 <Image source={require('../assets/decor/spin.png')} style={styles.btnImg} />
                             </TouchableOpacity>
                         </View>
@@ -179,7 +215,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: "center",
-        paddingTop: height * 0.17,
+        paddingTop: height * 0.085,
     },
 
     back: {
@@ -192,14 +228,14 @@ const styles = StyleSheet.create({
 
     balanceBtn: {
         width: 160,
-        height: 70,
-        marginBottom: height * 0.05
+        height: 60,
+        marginBottom: 12
     },
 
     balanceContainer: {
         position: 'absolute',
         alignSelf: 'center',
-        top: 24,
+        top: 18,
         flexDirection: 'row',
         alignItems: 'center'
     },
@@ -248,8 +284,8 @@ const styles = StyleSheet.create({
     },
 
     btn: {
-        width: 108,
-        height: 108,
+        width: height * 0.115,
+        height: height * 0.115,
         alignSelf: 'center'
     },
 
@@ -270,7 +306,7 @@ const styles = StyleSheet.create({
 
     buttonsContainer: {
         width: '100%', 
-        height: height * 0.35,
+        height: height * 0.38,
         position: 'absolute', 
         bottom: 0, 
         borderTopRightRadius: 30, 

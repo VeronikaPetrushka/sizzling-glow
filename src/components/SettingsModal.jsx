@@ -1,13 +1,11 @@
 import React, { useState } from "react"
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Switch, Image, Modal, Linking, Alert } from "react-native"
+import { View, Text, TouchableOpacity, StyleSheet, Switch, Image, Modal, Linking, Alert } from "react-native"
 import { LinearGradient } from 'react-native-linear-gradient';
 import { useMusic } from "../music";
 import Icons from "./Icons";
 
-const { height } = Dimensions.get('window');
-
-const PRIVACY_POLICY_URL = "https://yourwebsite.com/privacy-policy"; // change
-const APP_STORE_URL = "https://apps.apple.com/app/idYOUR_APP_ID"; // change
+const PRIVACY_POLICY_URL = "https://www.termsfeed.com/live/14bbfb7f-facf-4974-8626-aefbb80ba25b";
+const APP_STORE_URL = "https://apps.apple.com/us/app/glow-of-sizzling-play/id6743840913";
 
 const SettingsModal = ({ visible, onClose }) => {
     const { isPlaying, togglePlay } = useMusic();
@@ -135,7 +133,7 @@ const styles = StyleSheet.create({
     },
 
     btn: {
-        width: 140,
+        width: 130,
         height: 80,
     },
 

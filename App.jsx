@@ -11,6 +11,7 @@ import MenuScreen from './src/screens/MenuScreen';
 import AboutScreen from './src/screens/AboutScreen';
 import SlotsScreen from './src/screens/SlotsScreen';
 import ShopScreen from './src/screens/ShopScreen';
+import BonusScreen from './src/screens/BonusScreen';
 
 const { height } = Dimensions.get('window');
 
@@ -82,6 +83,11 @@ const App = () => {
                 <Stack.Screen 
                       name="ShopScreen" 
                       component={ShopScreen} 
+                      options={{ headerShown: false }} 
+                />
+                <Stack.Screen 
+                      name="BonusScreen" 
+                      component={BonusScreen} 
                       options={{ headerShown: false }} 
                 />
             </Stack.Navigator>

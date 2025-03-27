@@ -7,7 +7,7 @@ import Icons from "./Icons";
 
 const { height } = Dimensions.get("window");
 
-const Menu = () => {
+const Shop = () => {
     const navigation = useNavigation();
     const [balance, setBalance] = useState(0);
     const [unlockedBacks, setUnlockedBacks] = useState([]);
@@ -108,13 +108,13 @@ const Menu = () => {
                                 <View style={{width: '55%', alignItems: 'center', justifyContent: 'center'}}>
                                     <Text style={[styles.balanceBtnText, {fontSize: 20, marginBottom: 10}]}>{back.name}</Text>
                                     <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 10}}>
-                                        <Text style={[styles.balanceBtnText, {fontSize: 16}]}>Price: {back.price}</Text>
+                                        <Text style={[styles.balanceBtnText, {fontSize: 16}]}>Price: { isUnlocked ? '-' : back.price}</Text>
                                         <View style={{width: 24, height: 24, marginLeft: 2}}>
                                             <Icons type={'coin'} />
                                         </View>
                                     </View>
                                     <TouchableOpacity 
-                                        style={[styles.btn, {width: 125, height: 70}]} 
+                                        style={[styles.btn, {width: 125, height: 70}, (balance < back.price && !isUnlocked) && {opacity: 0.5}]} 
                                         onPress={isUnlocked ? () => selectBack(back) : () => unlockBack(back)}
                                         disabled={balance < back.price && !isUnlocked}
                                         >
@@ -193,4 +193,4 @@ const styles = StyleSheet.create({
     
 });
 
-export default Menu;
+export default Shop;
