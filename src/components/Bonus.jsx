@@ -182,7 +182,7 @@ const Bonus = () => {
 
                 <TouchableOpacity style={[styles.btn, !isBonusAvailable && {opacity: 0.5}]} onPress={spinWheel} disabled={!isBonusAvailable}>
                     <Image source={require('../assets/decor/button.png')} style={styles.btnImg} />
-                    <Text style={styles.btnText}>Spin</Text>
+                    <Text style={styles.btnText}>Get</Text>
                 </TouchableOpacity>
 
                 <Modal 

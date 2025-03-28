@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import TrackPlayer, { usePlaybackState, Event, RepeatMode } from 'react-native-track-player';
+import TrackPlayer, { Event, RepeatMode } from 'react-native-track-player';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MusicContext = createContext();
@@ -8,7 +8,6 @@ export const useMusic = () => useContext(MusicContext);
 
 export const MusicProvider = ({ children }) => {
     const [isPlaying, setIsPlaying] = useState(true);
-    const playbackState = usePlaybackState();
 
     useEffect(() => {
         const setupPlayer = async () => {
@@ -17,7 +16,7 @@ export const MusicProvider = ({ children }) => {
 
                 await TrackPlayer.add({
                     id: '1',
-                    url: require('../assets/music.mp3'),
+                    url: require('./assets/music.mp3'),
                     title: 'Background Music',
                     artist: 'Artist Name',
                 });
